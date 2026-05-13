@@ -11,6 +11,8 @@ const router: Router = Router();
 // Protected — must be logged in to create
 router.post('/', authenticate, validate(CreatePollDto), controller.createPoll);
 
+router.get('/my', authenticate, controller.getMyPolls);
+
 // Public — anyone can view a poll to respond
 router.get('/:pollId', controller.getPoll);
 
@@ -22,5 +24,7 @@ router.get('/:pollId/analytics', authenticate, controller.getAnalytics);
 
 // Protected — only creator can publish
 router.patch('/:pollId/publish', authenticate, controller.publishResults);
+
+
 
 export default router;

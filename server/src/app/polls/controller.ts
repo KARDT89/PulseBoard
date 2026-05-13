@@ -40,4 +40,10 @@ const publishResults = async (req: Request, res: Response) => {
   ApiResponse.ok(res, 'Results published', result);
 };
 
-export { createPoll, getPoll, submitResponse, getAnalytics, publishResults };
+const getMyPolls = async (req: Request, res: Response) => {
+  const polls = await pollService.getMyPolls(req.user.id);
+  ApiResponse.ok(res, 'Polls fetched', polls);
+};
+ 
+
+export { createPoll, getPoll, submitResponse, getAnalytics, publishResults, getMyPolls };

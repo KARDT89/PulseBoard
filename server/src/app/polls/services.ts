@@ -10,7 +10,7 @@ import { getIo } from '../socket/index.js';
 import ApiError from '../utils/api-errors.js';
 import type { CreatePollInput } from './dto/create-polls.dto.js';
 import type { SubmitResponseInput } from './dto/submit-response.dto.js';
-import { count, eq } from 'drizzle-orm';
+import { count, desc, eq } from 'drizzle-orm';
 
 // ── CREATE POLL ──────────────────────────────────────────────
 // Why loop? Drizzle doesn't support nested inserts.
@@ -180,4 +180,31 @@ const publishResults = async (pollId: any, creatorId: string) => {
   return { message: 'Results published' };
 };
 
-export { createPoll, getPoll, submitResponse, getAnalytics, publishResults };
+const getMyPolls = async (creatorId: string) => {
+  const polls = await db
+    .select()
+    .from(pollsTable)
+    .where(eq(pollsTable.creatorId, creatorId))
+    .orderBy(desc(pollsTable.createdAt));
+ 
+  // Get response count per poll
+  const pollsWithCounts = await Promise.all(
+    polls.map(async (poll) => {
+      const [total ] = await db
+        .select({ total: count() })
+        .from(responsesTable)
+        .where(eq(responsesTable.pollId, poll.id));
+ 
+      return {
+        ...poll,
+        _count: { responses: total?.total || 0 },
+      };
+    })
+  );
+
+  console.log(pollsWithCounts);
+ 
+  return { polls: pollsWithCounts };
+};
+
+export { createPoll, getPoll, submitResponse, getAnalytics, publishResults, getMyPolls };

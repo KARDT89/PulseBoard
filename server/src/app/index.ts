@@ -2,12 +2,19 @@ import express from 'express';
 import type Express from 'express';
 import authRoutes from './auth/routes.js';
 import cookieParser from 'cookie-parser';
-import pollRouter from './polls/routes.js'
+import cors from 'cors';
+import pollRouter from './polls/routes.js';
 
 export function createExpressApplication(): Express.Application {
   const app = express();
 
   //middlewarres
+  app.use(
+    cors({
+      origin: 'http://localhost:5173',
+      credentials: true,
+    }),
+  );
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
   app.use(cookieParser());
