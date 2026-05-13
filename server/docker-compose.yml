@@ -1,0 +1,14 @@
+services:
+  postgresdt89:
+    image: postgres:17
+    ports:
+      - '5433:5432'
+    environment:
+      - POSTGRES_USER=dt89
+      - POSTGRES_PASSWORD=verydifficultpassword
+      - POSTGRES_DB=chaicodedt89
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
