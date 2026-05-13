@@ -1,0 +1,68 @@
+<div class="auth-wrapper">
+
+  <p class="auth-eyebrow">One more step</p>
+  <h1 class="auth-title">CHECK YOUR EMAIL</h1>
+  <p class="auth-subtitle">
+    We sent a verification link to <br />
+    <% if (typeof email !== 'undefined' && email) { %>
+      <strong style="color: var(--white); font-family: var(--font-mono); font-size: 0.85rem;"><%= email %></strong>
+    <% } else { %>
+      <strong style="color: var(--white);">your inbox</strong>
+    <% } %>
+  </p>
+
+  <div class="auth-card">
+
+    <div class="check-email-icon">&#9993;</div>
+
+    <p class="check-email-message">
+      Click the link in the email to verify your account and get started.
+      The link expires in <span style="color: var(--white);">24 hours.</span>
+    </p>
+
+    <div class="divider">didn't get it?</div>
+
+    <a href="/api/auth/resend-verification" class="btn btn-ghost">
+      Resend Verification Email
+    </a>
+
+    <p class="check-email-footer">
+      Wrong email? <a href="/api/auth/register">Go back and register again</a>
+    </p>
+
+  </div>
+
+</div>
+
+<style>
+  .check-email-icon {
+    font-size: 3rem;
+    text-align: center;
+    margin-bottom: 1.5rem;
+    opacity: 0.4;
+    filter: grayscale(1);
+  }
+
+  .check-email-message {
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    color: var(--mid-grey);
+    line-height: 1.8;
+    text-align: center;
+    margin-bottom: 1.5rem;
+  }
+
+  .check-email-footer {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    color: var(--mid-grey);
+    text-align: center;
+    margin-top: 1.25rem;
+  }
+
+  .check-email-footer a {
+    color: var(--white);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+</style>
