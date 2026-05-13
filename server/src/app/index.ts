@@ -2,6 +2,7 @@ import express from 'express';
 import type Express from 'express';
 import authRoutes from './auth/routes.js';
 import cookieParser from 'cookie-parser';
+import pollRouter from './polls/routes.js'
 
 export function createExpressApplication(): Express.Application {
   const app = express();
@@ -18,6 +19,7 @@ export function createExpressApplication(): Express.Application {
 
   //routes
   app.use('/api/auth', authRoutes);
+  app.use('/api/polls', pollRouter);
 
   return app;
 }
