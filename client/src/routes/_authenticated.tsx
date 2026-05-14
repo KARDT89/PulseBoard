@@ -6,6 +6,8 @@ export const Route = createFileRoute('/_authenticated')({
   beforeLoad: async ({ context }) => {
     try {
       const { data } = await authApi.getMe();
+      console.log(data.data);
+      
       return { user: data.data.user };
     } catch {
       throw redirect({ to: '/login' });

@@ -44,6 +44,23 @@ const getMyPolls = async (req: Request, res: Response) => {
   const polls = await pollService.getMyPolls(req.user.id);
   ApiResponse.ok(res, 'Polls fetched', polls);
 };
- 
 
-export { createPoll, getPoll, submitResponse, getAnalytics, publishResults, getMyPolls };
+const getResults = async (req: Request, res: Response) => {
+  const results = await pollService.getResults(req.params.pollId);
+  ApiResponse.ok(res, 'Results fetched', results);
+};
+
+const deletePoll = async (req: Request, res: Response) => {
+  await pollService.deletePoll(req.params.pollId, req.user.id)
+  ApiResponse.ok(res, 'Poll deleted', null)
+}
+
+const getPublicPolls = async (req: Request, res: Response) => {
+  const page = parseInt(req.query.page as string) || 1
+  const sort = (req.query.sort as 'newest' | 'popular') || 'newest'
+  const result = await pollService.getPublicPolls(page, sort)
+  ApiResponse.ok(res, 'Polls fetched', result)
+}
+
+
+export { createPoll, getPoll, submitResponse, getAnalytics, publishResults, getMyPolls, getResults, deletePoll, getPublicPolls };

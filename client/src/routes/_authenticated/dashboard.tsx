@@ -20,6 +20,7 @@ import {
   IconFlame,
   IconHourglass,
 } from '@tabler/icons-react'
+import { IconTrash } from '@tabler/icons-react'
 
 export const Route = createFileRoute('/_authenticated/dashboard')({
   component: DashboardPage,
@@ -49,9 +50,11 @@ const statusConfig = {
   },
 }
 
-export default function DashboardPage() {
+function DashboardPage() {
   const { user } = useAuth()
   const queryClient = useQueryClient()
+  console.log("user from dashnoard", user);
+  
 
   const { data, isLoading } = useQuery({
     queryKey: ['my-polls'],
@@ -67,6 +70,15 @@ export default function DashboardPage() {
     onError: () => toast.error('Failed to publish'),
   })
 
+  const deleteMutation = useMutation({
+  mutationFn: (pollId: string) => pollsApi.delete(pollId),
+  onSuccess: () => {
+    toast.success('Poll deleted')
+    queryClient.invalidateQueries({ queryKey: ['my-polls'] })
+  },
+  onError: () => toast.error('Failed to delete'),
+})
+
   const copyLink = (pollId: string) => {
     navigator.clipboard.writeText(`${window.location.origin}/polls/${pollId}`)
     toast.success('Link copied')
@@ -77,6 +89,7 @@ export default function DashboardPage() {
   const livePolls = polls.filter((p: any) => !p.isPublished && new Date() < new Date(p.expiresAt))
   const publishedPolls = polls.filter((p: any) => p.isPublished)
 
+  
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-4xl mx-auto px-6 py-10 space-y-10">
@@ -264,6 +277,36 @@ export default function DashboardPage() {
                             Analytics
                           </Button>
                         </Link>
+                         <Button
+  variant="ghost"
+  size="sm"
+  onClick={() => {
+    if (confirm('Delete this poll? This cannot be undone.')) {
+      deleteMutation.mutate(poll.id)
+    }
+  }}
+  disabled={deleteMutation.isPending}
+  className="text-zinc-600 hover:text-red-400 hover:bg-red-950/20 gap-1.5 rounded-lg h-8 px-3 text-xs"
+>
+  {deleteMutation.isPending ? (
+    <IconLoader2 size={13} className="animate-spin" />
+  ) : (
+    <IconTrash size={13} />
+  )}
+  Delete
+</Button>
+                        {poll.isPublished && (
+                          <Link to="/polls/$pollId/results" params={{ pollId: poll.id }}>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="text-zinc-500 hover:text-white hover:bg-zinc-800 gap-1.5 rounded-lg h-8 px-3 text-xs"
+                            >
+                              <IconChartBar size={13} />
+                              View results
+                            </Button>
+                          </Link>
+                        )}
 
                         {!poll.isPublished && (
                           <Button
@@ -281,6 +324,7 @@ export default function DashboardPage() {
                           </Button>
                         )}
                       </div>
+                     
                     </div>
                   </motion.div>
                 )

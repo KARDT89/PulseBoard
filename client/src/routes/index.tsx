@@ -16,6 +16,7 @@ import {
   IconMinus,
   IconPlus,
 } from '@tabler/icons-react'
+import { useAuth } from '@/api/auth-context'
 
 export const Route = createFileRoute('/')({
   component: LandingPage,
@@ -220,13 +221,14 @@ const faqs = [
     a: "Expired polls stop accepting responses automatically. You can still view analytics and publish results at any time.",
   },
 ]
-
-export default function LandingPage() {
+function LandingPage() {
   const heroRef = useRef<HTMLDivElement>(null)
   const { scrollYProgress } = useScroll({ target: heroRef, offset: ['start start', 'end start'] })
   const heroY = useTransform(scrollYProgress, [0, 1], ['0%', '15%'])
   const heroOpacity = useTransform(scrollYProgress, [0, 0.8], [1, 0])
   const [openFaq, setOpenFaq] = useState<number | null>(null)
+
+  const { user, logout } = useAuth()
 
   return (
     <div className="bg-zinc-950 text-white overflow-x-hidden">
@@ -235,17 +237,43 @@ export default function LandingPage() {
         <div className="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between">
           <p className="text-xs tracking-[0.3em] text-red-500 uppercase font-semibold">Pollify</p>
           <div className="flex items-center gap-3">
-            <Link to="/login">
-              <Button variant="ghost" size="sm" className="text-zinc-400 hover:text-white text-xs">
-                Sign in
-              </Button>
-            </Link>
-            <Link to="/register">
-              <Button size="sm" className="bg-red-600 hover:bg-red-700 text-white text-xs gap-1.5">
-                Get started <IconArrowRight size={12} />
-              </Button>
-            </Link>
-          </div>
+  <Link to="/explore">
+    <Button variant="ghost" size="sm" className="text-zinc-400 hover:text-white text-xs">
+      Explore
+    </Button>
+  </Link>
+
+  {user ? (
+    <>
+      <Link to="/dashboard">
+        <Button variant="ghost" size="sm" className="text-zinc-400 hover:text-white text-xs">
+          Dashboard
+        </Button>
+      </Link>
+      <Button
+        size="sm"
+        variant="ghost"
+        onClick={logout}
+        className="text-zinc-400 hover:text-red-400 text-xs"
+      >
+        Logout
+      </Button>
+    </>
+  ) : (
+    <>
+      <Link to="/login">
+        <Button variant="ghost" size="sm" className="text-zinc-400 hover:text-white text-xs">
+          Sign in
+        </Button>
+      </Link>
+      <Link to="/register">
+        <Button size="sm" className="bg-red-600 hover:bg-red-700 text-white text-xs gap-1.5">
+          Get started <IconArrowRight size={12} />
+        </Button>
+      </Link>
+    </>
+  )}
+</div>
         </div>
       </header>
 
@@ -314,9 +342,9 @@ export default function LandingPage() {
                 Start for free <IconArrowRight size={15} />
               </Button>
             </Link>
-            <Link to="/login">
+            <Link to="/explore">
               <Button variant="outline" className="border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-600 px-8 py-5 text-sm">
-                Sign in
+                Explore
               </Button>
             </Link>
           </motion.div>

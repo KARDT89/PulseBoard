@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useQuery, useMutation } from '@tanstack/react-query'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion} from 'framer-motion'
 import { toast } from 'sonner'
 import { useState } from 'react'
 import { pollsApi } from '@/api/polls.api'
@@ -16,11 +16,11 @@ import {
 } from '@tabler/icons-react'
 import { formatDistanceToNow } from 'date-fns'
 
-export const Route = createFileRoute('/_authenticated/polls/$pollId')({
+export const Route = createFileRoute('/polls/$pollId')({
   component: RespondPollPage,
 })
 
-export default function RespondPollPage() {
+function RespondPollPage() {
   const { pollId } = Route.useParams()
   const { user } = useAuth()
   const navigate = useNavigate()
@@ -82,6 +82,7 @@ export default function RespondPollPage() {
   }
 
   const poll = data.poll
+  console.log(poll)
   const isExpired = new Date() > new Date(poll.expiresAt)
   const requiresAuth = !poll.isAnonymous && !user
 
@@ -101,7 +102,7 @@ export default function RespondPollPage() {
           <p className="text-zinc-500 text-sm">Thanks for your feedback.</p>
           {poll.isPublished && (
             <Button
-              onClick={() => navigate({ to: '/polls/$pollId/results', params: { pollId } })}
+              onClick={() => navigate({ to: '/polls/$pollId/results', params: { pollId: poll.id } })}
               className="mt-6 bg-zinc-800 hover:bg-zinc-700 text-white"
             >
               View results
@@ -111,6 +112,26 @@ export default function RespondPollPage() {
       </div>
     )
   }
+
+  if (poll.isPublished) {
+  return (
+    <div className="min-h-screen bg-zinc-950 flex items-center justify-center p-8">
+      <div className="text-center max-w-sm">
+        <div className="w-16 h-16 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center mx-auto mb-6">
+          <IconCheck size={28} className="text-zinc-500" />
+        </div>
+        <h2 className="text-2xl font-bold text-white mb-2">Results are in</h2>
+        <p className="text-zinc-500 text-sm mb-6">This poll has been closed and results are published.</p>
+        <Button
+          onClick={() => navigate({ to: '/polls/$pollId/results', params: { pollId: pollId } })}
+          className="bg-red-600 hover:bg-red-700 text-white"
+        >
+          View results
+        </Button>
+      </div>
+    </div>
+  )
+}
 
   // Expired state
   if (isExpired) {

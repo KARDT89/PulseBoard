@@ -81,7 +81,7 @@ function OptionBar({ text, votes, pct, isTop, delay }: {
       </div>
       <div className="relative h-7 bg-zinc-900 rounded-lg overflow-hidden border border-zinc-800/50">
         <motion.div
-          className={`absolute inset-y-0 left-0 rounded-lg ${isTop && votes > 0 ? 'bg-gradient-to-r from-red-700 to-red-500' : 'bg-zinc-800'}`}
+          className={`absolute inset-y-0 left-0 rounded-lg ${isTop && votes > 0 ? 'bg-linear-to-r from-red-700 to-red-500' : 'bg-zinc-800'}`}
           initial={{ width: 0 }}
           animate={{ width: `${pct}%` }}
           transition={{ duration: 0.8, delay, ease: [0.16, 1, 0.3, 1] }}
@@ -109,7 +109,7 @@ function QuestionCard({ question, index, countMap }: {
       transition={{ delay: 0.2 + index * 0.08 }}
       className="relative bg-zinc-950 border border-zinc-800/80 rounded-2xl overflow-hidden"
     >
-      <div className="h-px bg-gradient-to-r from-transparent via-red-800/50 to-transparent" />
+      <div className="h-px bg-linear-to-r from-transparent via-red-800/50 to-transparent" />
       <div className="p-6">
         <div className="flex items-start gap-4 mb-6">
           <div className="w-8 h-8 rounded-lg bg-zinc-900 border border-zinc-800 flex items-center justify-center shrink-0 mt-0.5">
@@ -147,7 +147,7 @@ function QuestionCard({ question, index, countMap }: {
   )
 }
 
-export default function AnalyticsPage() {
+function AnalyticsPage() {
   const { pollId } = Route.useParams()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
@@ -303,7 +303,7 @@ export default function AnalyticsPage() {
           transition={{ delay: 0.1 }}
           className="bg-zinc-950 border border-zinc-800/80 rounded-2xl overflow-hidden"
         >
-          <div className="h-px bg-gradient-to-r from-transparent via-red-800/50 to-transparent" />
+          <div className="h-px bg-linear-to-r from-transparent via-red-800/50 to-transparent" />
           <div className="p-8 flex flex-col sm:flex-row items-center gap-8">
             <ResponseRing count={total} />
             <div className="flex-1 grid grid-cols-2 gap-3 w-full">

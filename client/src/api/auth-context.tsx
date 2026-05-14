@@ -23,6 +23,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const login = async (email: string, password: string) => {
     const { data } = await authApi.login({ email, password });
     sessionStorage.setItem('accessToken', data.data.accessToken);
+    
     setUser(data.data.user);
   };
 

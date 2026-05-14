@@ -58,7 +58,7 @@ export function Navbar() {
           <div className="flex items-center justify-between h-14">
 
             {/* Logo */}
-            <Link to="/dashboard" className="flex items-center gap-2.5 group">
+            <Link to="/" className="flex items-center gap-2.5 group">
               <div className="w-7 h-7 rounded-lg bg-red-600 flex items-center justify-center shrink-0 group-hover:bg-red-500 transition-colors">
                 <IconChartBar size={14} className="text-white" />
               </div>

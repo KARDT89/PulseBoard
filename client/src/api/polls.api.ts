@@ -23,4 +23,11 @@ export const pollsApi = {
     api.post(`/polls/${pollId}/respond`, body),
 
   publish: (pollId: string) => api.patch(`/polls/${pollId}/publish`),
+
+  delete: (pollId: string) => api.delete(`/polls/${pollId}`),
+
+  getResults: (pollId: string) => api.get(`/polls/${pollId}/results`),
+
+  getFeed: (page: number, sort: 'newest' | 'popular') =>
+  api.get(`/polls/feed?page=${page}&sort=${sort}`),
 };

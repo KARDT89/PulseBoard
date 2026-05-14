@@ -50,7 +50,7 @@ export const optionsTable = pgTable('options', {
 
 export const responsesTable = pgTable('responses', {
   id: uuid('id').defaultRandom().primaryKey(),
-  pollId: uuid('poll_id').references(() => pollsTable.id).notNull(),
+  pollId: uuid('poll_id').references(() => pollsTable.id, { onDelete: 'cascade' }).notNull(),
   respondentId: uuid('respondent_id').references(() => usersTable.id), // null = anonymous
   submittedAt: timestamp('submitted_at').defaultNow(),
 });
@@ -58,6 +58,6 @@ export const responsesTable = pgTable('responses', {
 export const answersTable = pgTable('answers', {
   id: uuid('id').defaultRandom().primaryKey(),
   responseId: uuid('response_id').references(() => responsesTable.id, { onDelete: 'cascade' }).notNull(),
-  questionId: uuid('question_id').references(() => questionsTable.id).notNull(),
-  optionId: uuid('option_id').references(() => optionsTable.id).notNull(),
+  questionId: uuid('question_id').references(() => questionsTable.id, { onDelete: 'cascade' }).notNull(),
+  optionId: uuid('option_id').references(() => optionsTable.id, { onDelete: 'cascade' }).notNull(),
 });

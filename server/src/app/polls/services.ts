@@ -175,7 +175,7 @@ const publishResults = async (pollId: any, creatorId: string) => {
   if (!poll) throw ApiError.notFound('Poll not found');
   if (poll.creatorId !== creatorId) throw ApiError.forbidden('Not your poll');
 
-  await db.update(pollsTable).set({ isPublished: true }).where(eq(pollsTable.id, pollId));
+  await db.update(pollsTable).set({ isPublished: true, expiresAt: new Date() }).where(eq(pollsTable.id, pollId));
 
   return { message: 'Results published' };
 };
@@ -201,10 +201,121 @@ const getMyPolls = async (creatorId: string) => {
       };
     })
   );
-
-  console.log(pollsWithCounts);
  
   return { polls: pollsWithCounts };
 };
 
-export { createPoll, getPoll, submitResponse, getAnalytics, publishResults, getMyPolls };
+const getResults = async (pollId: any) => {
+  const [poll] = await db.select().from(pollsTable).where(eq(pollsTable.id, pollId));
+
+  if (!poll) throw ApiError.notFound('Poll not found');
+  if (!poll.isPublished) throw ApiError.forbidden('Results not published yet');
+
+  const questions = await db.select().from(questionsTable).where(eq(questionsTable.pollId, pollId));
+
+  const questionsWithOptions = await Promise.all(
+    questions.map(async (q) => {
+      const options = await db.select().from(optionsTable).where(eq(optionsTable.questionId, q.id));
+      return { ...q, options };
+    }),
+  );
+
+  // Count votes per option (via answers → responses)
+  const optionCounts = await db
+    .select({
+      optionId: answersTable.optionId,
+      count: count(),
+    })
+    .from(answersTable)
+    .innerJoin(responsesTable, eq(answersTable.responseId, responsesTable.id))
+    .where(eq(responsesTable.pollId, pollId))
+    .groupBy(answersTable.optionId);
+
+  const countMap = Object.fromEntries(optionCounts.map((r) => [r.optionId, r.count]));
+
+  const [total] = await db
+    .select({ total: count() })
+    .from(responsesTable)
+    .where(eq(responsesTable.pollId, pollId));
+
+  const results = questionsWithOptions
+    .sort((a, b) => a.order - b.order)
+    .map((q) => ({
+      id: q.id,
+      text: q.text,
+      order: q.order,
+      options: q.options.map((opt) => ({
+        id: opt.id,
+        text: opt.text,
+        count: countMap[opt.id] ?? 0,
+      })),
+    }));
+
+  return {
+    poll: {
+      id: poll.id,
+      title: poll.title,
+      description: poll.description,
+      isAnonymous: poll.isAnonymous,
+      isPublished: poll.isPublished,
+      expiresAt: poll.expiresAt,
+      _count: { responses: total?.total ?? 0 },
+    },
+    results,
+  };
+};
+
+const deletePoll = async (pollId: any, creatorId: string) => {
+  const [poll] = await db.select().from(pollsTable).where(eq(pollsTable.id, pollId))
+
+  if (!poll) throw ApiError.notFound('Poll not found')
+  if (poll.creatorId !== creatorId) throw ApiError.forbidden('Not your poll')
+
+  await db.delete(pollsTable).where(eq(pollsTable.id, pollId))
+
+  return { pollId }
+}
+
+const getPublicPolls = async (page: number = 1, sort: 'newest' | 'popular' = 'newest') => {
+  const limit = 10
+  const offset = (page - 1) * limit
+
+  const allPolls = await db
+    .select()
+    .from(pollsTable)
+    .where(eq(pollsTable.isPublished, false)) // only live polls, not closed/published
+    .orderBy(sort === 'newest' ? desc(pollsTable.createdAt) : desc(pollsTable.id))
+    .limit(limit)
+    .offset(offset)
+
+  const pollsWithCounts = await Promise.all(
+    allPolls.map(async (poll) => {
+      const [total] = await db
+        .select({ total: count() })
+        .from(responsesTable)
+        .where(eq(responsesTable.pollId, poll.id))
+
+      return {
+        ...poll,
+        _count: { responses: total?.total ?? 0 },
+      }
+    })
+  )
+
+  const [totalCount] = await db
+    .select({ total: count() })
+    .from(pollsTable)
+    .where(eq(pollsTable.isPublished, false))
+
+  return {
+    polls: pollsWithCounts,
+    pagination: {
+      page,
+      limit,
+      total: totalCount?.total ?? 0,
+      totalPages: Math.ceil((totalCount?.total ?? 0) / limit),
+    },
+  }
+}
+
+export { createPoll, getPoll, submitResponse, getAnalytics, publishResults, getMyPolls, getResults, deletePoll, getPublicPolls };

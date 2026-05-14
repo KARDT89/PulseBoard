@@ -20,7 +20,7 @@ const schema = z.object({
   password: z.string().min(6, 'Min 6 characters'),
 })
 
-export default function LoginPage() {
+function LoginPage() {
   const navigate = useNavigate()
   const { login } = useAuth()
 

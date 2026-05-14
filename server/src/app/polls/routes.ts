@@ -13,6 +13,8 @@ router.post('/', authenticate, validate(CreatePollDto), controller.createPoll);
 
 router.get('/my', authenticate, controller.getMyPolls);
 
+router.get('/feed', controller.getPublicPolls) // must be before /:pollId
+
 // Public — anyone can view a poll to respond
 router.get('/:pollId', controller.getPoll);
 
@@ -25,6 +27,9 @@ router.get('/:pollId/analytics', authenticate, controller.getAnalytics);
 // Protected — only creator can publish
 router.patch('/:pollId/publish', authenticate, controller.publishResults);
 
+router.get('/:pollId/results', optionalAuthenticate, controller.getResults);
+
+router.delete('/:pollId', authenticate, controller.deletePoll)
 
 
 export default router;

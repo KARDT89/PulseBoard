@@ -37,7 +37,7 @@ const newQuestion = (): QuestionDraft => ({
 const inputCls =
   'w-full bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-2.5 text-sm text-white placeholder:text-zinc-600 focus:outline-none focus:border-zinc-600 focus:ring-1 focus:ring-zinc-700 transition-colors'
 
-export default function CreatePollPage() {
+function CreatePollPage() {
   const navigate = useNavigate()
   const [questions, setQuestions] = useState<QuestionDraft[]>([newQuestion()])
 
@@ -130,7 +130,7 @@ export default function CreatePollPage() {
             transition={{ delay: 0.08 }}
             className="bg-zinc-950 border border-zinc-800/80 rounded-2xl overflow-hidden"
           >
-            <div className="h-px bg-gradient-to-r from-transparent via-red-800/40 to-transparent" />
+            <div className="h-px bg-linear-to-r from-transparent via-red-800/40 to-transparent" />
             <div className="p-6 space-y-5">
               <div className="flex items-center gap-2 mb-1">
                 <span className="text-[10px] uppercase tracking-[0.2em] text-zinc-600">Poll details</span>
@@ -235,7 +235,7 @@ export default function CreatePollPage() {
                   transition={{ delay: qi * 0.04 }}
                   className="bg-zinc-950 border border-zinc-800/80 rounded-2xl overflow-hidden"
                 >
-                  <div className="h-px bg-gradient-to-r from-transparent via-zinc-800/60 to-transparent" />
+                  <div className="h-px bg-linear-to-r from-transparent via-zinc-800/60 to-transparent" />
                   <div className="p-5 space-y-4">
                     {/* Question header */}
                     <div className="flex items-center gap-3">
