@@ -12,6 +12,9 @@ import {
   IconClock,
 } from '@tabler/icons-react'
 import { formatDistanceToNow } from 'date-fns'
+import { socket } from '@/lib/socket'
+import { useEffect, useState } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 
 export const Route = createFileRoute('/_authenticated/polls/$pollId/results')({
   component: ResultsPage,
@@ -20,6 +23,36 @@ export const Route = createFileRoute('/_authenticated/polls/$pollId/results')({
 function ResultsPage() {
   const { pollId } = Route.useParams()
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
+const [viewers, setViewers] = useState(1)
+
+useEffect(() => {
+  socket.connect()
+
+  socket.emit('join-poll', pollId)
+
+  socket.on('connect', () => {
+    // re-join room if socket reconnects mid-session
+    socket.emit('join-poll', pollId)
+  })
+
+  socket.on('new-response', () => {
+    queryClient.invalidateQueries({ queryKey: ['poll-results', pollId] })
+  })
+
+  socket.on('viewers-update', (data) => {
+    setViewers(data.count)
+  })
+
+  return () => {
+    socket.emit('leave-poll', pollId)
+    socket.off('connect')
+    socket.off('new-response')
+    socket.off('viewers-update')
+    socket.disconnect()
+  }
+}, [pollId])
+  
 
   const { data, isLoading, error } = useQuery({
     queryKey: ['poll-results', pollId],
@@ -58,13 +91,16 @@ function ResultsPage() {
     <div className="min-h-screen bg-background">
       {/* Top bar */}
       <div className="border-b border-zinc-900 px-6 py-4">
-        <div className="max-w-2xl mx-auto flex items-center justify-between">
-          <p className="text-xs tracking-[0.3em] text-red-500 uppercase">Pollify</p>
-          <div className="flex items-center gap-2 text-zinc-500 text-xs">
-            <IconClock size={12} />
-            Closed {formatDistanceToNow(new Date(poll.expiresAt), { addSuffix: true })}
-          </div>
-        </div>
+        <div className="flex items-center gap-4 text-xs">
+  <div className="flex items-center gap-1.5 text-zinc-500">
+    <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+    <span>{viewers} viewing</span>
+  </div>
+  <div className="flex items-center gap-1.5 text-zinc-500">
+    <IconClock size={12} />
+    Closed {formatDistanceToNow(new Date(poll.expiresAt), { addSuffix: true })}
+  </div>
+</div>
       </div>
 
       {/* Full progress bar (closed) */}

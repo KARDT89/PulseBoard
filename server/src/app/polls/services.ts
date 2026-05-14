@@ -77,30 +77,24 @@ const submitResponse = async (pollId: any, { answers }: SubmitResponseInput, use
 
   if (!poll) throw ApiError.notFound('Poll not found');
 
-  // Expiry check — most important business rule
   if (new Date() > poll.expiresAt) {
     throw ApiError.badRequest('This poll has expired');
   }
 
-  // If poll requires auth and user isn't logged in, reject
   if (!poll.isAnonymous && !userId) {
     throw ApiError.unauthorized('This poll requires you to be logged in');
   }
 
-  // Mandatory question check
   const questions = await db.select().from(questionsTable).where(eq(questionsTable.pollId, pollId));
 
   const mandatoryIds = questions.filter((q) => q.isMandatory).map((q) => q.id);
-
   const answeredQuestionIds = answers.map((a) => a.questionId);
-
   const unanswered = mandatoryIds.filter((id) => !answeredQuestionIds.includes(id));
 
   if (unanswered.length > 0) {
     throw ApiError.badRequest('Please answer all mandatory questions');
   }
 
-  // Transaction starts here
   return await db.transaction(async (tx) => {
     const [response] = await tx
       .insert(responsesTable)
@@ -108,9 +102,7 @@ const submitResponse = async (pollId: any, { answers }: SubmitResponseInput, use
         pollId,
         respondentId: userId ?? null,
       })
-      .returning({
-        id: responsesTable.id,
-      });
+      .returning({ id: responsesTable.id });
 
     if (!response) {
       throw ApiError.dbError('Failed to create response');
@@ -124,16 +116,36 @@ const submitResponse = async (pollId: any, { answers }: SubmitResponseInput, use
       })),
     );
 
-    // Count inside the same transaction so the number is accurate
     const [total] = await tx
       .select({ total: count() })
       .from(responsesTable)
       .where(eq(responsesTable.pollId, pollId));
 
+    // fetch updated option counts for live results
+    const optionCounts = await tx
+      .select({
+        optionId: answersTable.optionId,
+        count: count(),
+      })
+      .from(answersTable)
+      .innerJoin(responsesTable, eq(answersTable.responseId, responsesTable.id))
+      .where(eq(responsesTable.pollId, pollId))
+      .groupBy(answersTable.optionId);
+
     const io = getIo();
+
+    // emit to poll room — respond page + results page listeners
     io.to(`poll:${pollId}`).emit('new-response', {
       pollId,
-      totalResponses: total,
+      totalResponses: total?.total ?? 0,
+      optionCounts, // [{ optionId, count }]
+    });
+
+    // emit to global feed room — explore page listener
+    io.to('feed').emit('feed-activity', {
+      pollId,
+      pollTitle: poll.title,
+      totalResponses: total?.total ?? 0,
     });
 
     return { responseId: response.id };

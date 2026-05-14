@@ -16,6 +16,10 @@ import {
   IconArrowRight,
 } from '@tabler/icons-react'
 import { formatDistanceToNow } from 'date-fns'
+import { socket } from '@/lib/socket'
+import { useEffect } from 'react'
+import { toast } from 'sonner'
+import { useQueryClient } from '@tanstack/react-query'
 
 export const Route = createFileRoute('/explore')({
   component: ExplorePage,
@@ -24,6 +28,32 @@ export const Route = createFileRoute('/explore')({
 function ExplorePage() {
   const [page, setPage] = useState(1)
   const [sort, setSort] = useState<'newest' | 'popular'>('newest')
+  const queryClient = useQueryClient()
+
+  useEffect(() => {
+  socket.connect()
+
+  socket.emit('join-feed')
+
+  socket.on('connect', () => {
+    socket.emit('join-feed')
+  })
+
+  socket.on('feed-activity', (data) => {
+    toast(`New response on "${data.pollTitle}"`, {
+      description: `${data.totalResponses} total responses`,
+      duration: 3000,
+    })
+    queryClient.invalidateQueries({ queryKey: ['feed'] })
+  })
+
+  return () => {
+    socket.emit('leave-feed')
+    socket.off('connect')
+    socket.off('feed-activity')
+    socket.disconnect()
+  }
+}, [])
 
   const { data, isLoading } = useQuery({
     queryKey: ['feed', page, sort],

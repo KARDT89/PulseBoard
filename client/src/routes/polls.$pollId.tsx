@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useQuery, useMutation } from '@tanstack/react-query'
 import { motion} from 'framer-motion'
 import { toast } from 'sonner'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { pollsApi } from '@/api/polls.api'
 import { useAuth } from '@/api/auth-context'
 import { Button } from '@/components/ui/button'
@@ -15,6 +15,8 @@ import {
   IconAlertTriangle,
 } from '@tabler/icons-react'
 import { formatDistanceToNow } from 'date-fns'
+import { socket } from '@/lib/socket'
+import { IconUser } from '@tabler/icons-react'
 
 export const Route = createFileRoute('/polls/$pollId')({
   component: RespondPollPage,
@@ -26,6 +28,26 @@ function RespondPollPage() {
   const navigate = useNavigate()
   const [answers, setAnswers] = useState<Record<string, string>>({})
   const [submitted, setSubmitted] = useState(false)
+  const [totalResponses, setTotalResponses] = useState<number | null>(null)
+const [viewers, setViewers] = useState<number>(1)
+
+useEffect(() => {
+  socket.emit('join-poll', pollId)
+
+  socket.on('new-response', (data) => {
+    setTotalResponses(data.totalResponses)
+  })
+
+  socket.on('viewers-update', (data) => {
+    setViewers(data.count)
+  })
+
+  return () => {
+    socket.emit('leave-poll', pollId)
+    socket.off('new-response')
+    socket.off('viewers-update')
+  }
+}, [pollId])
 
   const { data, isLoading, error } = useQuery({
     queryKey: ['poll', pollId],
@@ -179,13 +201,22 @@ function RespondPollPage() {
     <div className="min-h-screen bg-background">
       {/* Top bar */}
       <div className="border-b border-zinc-900 px-6 py-4">
-        <div className="max-w-2xl mx-auto flex items-center justify-between">
-          <p className="text-xs tracking-[0.3em] text-red-500 uppercase">Pollify</p>
-          <div className="flex items-center gap-2 text-zinc-500 text-xs">
-            <IconClock size={12} />
-            Closes {formatDistanceToNow(new Date(poll.expiresAt), { addSuffix: true })}
-          </div>
-        </div>
+        <div className="flex items-center gap-4 text-xs">
+  <div className="flex items-center gap-1.5 text-zinc-500">
+    <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+    <span>{viewers} viewing</span>
+  </div>
+  <div className="flex items-center gap-1.5 text-zinc-500">
+    <IconClock size={12} />
+    Closes {formatDistanceToNow(new Date(poll.expiresAt), { addSuffix: true })}
+  </div>
+  {totalResponses !== null && (
+    <div className="flex items-center gap-1.5 text-zinc-500">
+      <IconUser size={12} />
+      {totalResponses} responses
+    </div>
+  )}
+</div>
       </div>
 
       {/* Progress bar */}
