@@ -13,17 +13,6 @@ import { IconArrowRight, IconLoader2 } from '@tabler/icons-react'
 import { authApi } from '../api/auth.api';
 
 export const Route = createFileRoute('/login')({
-  beforeLoad: async () => {
-    try {
-      await authApi.getMe();
-      // if getMe succeeds, user is logged in
-      throw redirect({ to: '/dashboard' });
-    } catch (e) {
-      // if it's our redirect, rethrow it
-      if (e instanceof Response || (e as any).to) throw e;
-      // otherwise getMe failed = not logged in, stay on login
-    }
-  },
   component: LoginPage,
 })
 
