@@ -27,8 +27,6 @@ function ResultsPage() {
 const [viewers, setViewers] = useState(1)
 
 useEffect(() => {
-  socket.connect()
-
   socket.emit('join-poll', pollId)
 
   socket.on('connect', () => {
@@ -49,7 +47,6 @@ useEffect(() => {
     socket.off('connect')
     socket.off('new-response')
     socket.off('viewers-update')
-    socket.disconnect()
   }
 }, [pollId])
   

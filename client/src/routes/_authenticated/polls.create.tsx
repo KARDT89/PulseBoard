@@ -11,7 +11,6 @@ import {
   IconPlus,
   IconTrash,
   IconLoader2,
-  IconGripVertical,
   IconCheck,
 } from '@tabler/icons-react'
 

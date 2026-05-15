@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate, redirect } from '@tanstack/react-router'
+import { createFileRoute, Link, useNavigate} from '@tanstack/react-router'
 import { useForm } from '@tanstack/react-form'
 import { useMutation } from '@tanstack/react-query'
 import { motion } from 'framer-motion'

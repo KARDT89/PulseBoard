@@ -5,7 +5,6 @@ import { useAuth } from '@/api/auth-context'
 import { toast } from 'sonner'
 import { formatDistanceToNow } from 'date-fns'
 import { motion } from 'framer-motion'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
   IconChartBar,

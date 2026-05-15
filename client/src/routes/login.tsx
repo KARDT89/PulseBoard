@@ -10,7 +10,6 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { IconArrowRight, IconLoader2 } from '@tabler/icons-react'
-import { authApi } from '../api/auth.api';
 
 export const Route = createFileRoute('/login')({
   component: LoginPage,
